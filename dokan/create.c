@@ -247,54 +247,6 @@ VOID DispatchCreate(PDOKAN_IO_EVENT IoEvent) {
       IoEvent->EventResult->Operation.Create.Information = FILE_EXISTS;
     }
 
-    if (STATUS_ACCESS_DENIED == status &&
-        IoEvent->DokanInstance->DokanOperations->ZwCreateFile &&
-        (IoEvent->EventContext->Operation.Create.SecurityContext.DesiredAccess &
-         DELETE)) {
-      DbgPrint("Delete failed, ask parent folder if we have the right\n");
-      // strip the last section of the file path
-      WCHAR *lastP = NULL;
-      for (WCHAR *p = fileName; *p; p++) {
-        if ((*p == L'\\' || *p == L'/') && p[1])
-          lastP = p;
-      }
-      if (lastP) {
-        *lastP = 0;
-      }
-
-      SetIOSecurityContext(IoEvent->EventContext, &ioSecurityContext);
-      ACCESS_MASK newDesiredAccess =
-          (MAXIMUM_ALLOWED & ioSecurityContext.DesiredAccess)
-              ? (FILE_DELETE_CHILD | FILE_LIST_DIRECTORY)
-              : (((DELETE & ioSecurityContext.DesiredAccess) ? FILE_DELETE_CHILD
-                                                             : 0) |
-                 ((FILE_READ_ATTRIBUTES & ioSecurityContext.DesiredAccess)
-                      ? FILE_LIST_DIRECTORY
-                      : 0));
-
-      options |= FILE_OPEN_FOR_BACKUP_INTENT; //Enable open directory
-      options &= ~FILE_NON_DIRECTORY_FILE;    //Remove non dir flag
-
-      status = IoEvent->DokanInstance->DokanOperations->ZwCreateFile(
-          fileName, &ioSecurityContext, newDesiredAccess,
-          IoEvent->EventContext->Operation.Create.FileAttributes,
-          IoEvent->EventContext->Operation.Create.ShareAccess, disposition,
-          options, &IoEvent->DokanFileInfo);
-
-      if (status == STATUS_SUCCESS) {
-        DbgPrint("Parent give us the right to delete\n");
-        IoEvent->EventResult->Status = STATUS_SUCCESS;
-        IoEvent->EventResult->Operation.Create.Information = FILE_OPENED;
-      } else {
-        DbgPrint("Parent CreateFile failed status = %lx\n", status);
-        PushFileOpenInfo(IoEvent->DokanOpenInfo);
-        IoEvent->DokanOpenInfo = NULL;
-      }
-    } else {
-      PushFileOpenInfo(IoEvent->DokanOpenInfo);
-      IoEvent->DokanOpenInfo = NULL;
-    }
-
   } else {
 
     IoEvent->EventResult->Status = STATUS_SUCCESS;
