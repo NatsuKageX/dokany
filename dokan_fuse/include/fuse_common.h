@@ -80,6 +80,11 @@ struct fuse_file_info {
 
 	/** Lock owner id.  Available in locking operations and flush */
 	uint64_t lock_owner;
+
+#ifdef _WIN32
+    /** Win32-specific access mode. Available in open() and release() */
+    uint32_t win_access_mode;
+#endif
 };
 
 /**
