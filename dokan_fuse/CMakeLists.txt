@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.22.1)
 project(dokanfuse2)
 include(GNUInstallDirs)
+set(CMAKE_CXX_STANDARD 11)
 
 if(NOT CMAKE_BUILD_TYPE)
     message("No CMAKE_BUILD_TYPE specified, defaulting to Release")
@@ -9,7 +10,9 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 option(FUSE_PKG_CONFIG "Install a libfuse-compatible pkg-config file (fuse.pc)" ON)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -mwin32 -Wall")
+if (NOT MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mwin32 -Wall")
+endif()
 add_definitions(-D_FILE_OFFSET_BITS=64)
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -44,6 +47,9 @@ if(FUSE_PKG_CONFIG)
 endif()
 
 file(GLOB sources src/*.cpp src/*.c src/*.rc)
+if (MSVC)
+    list(APPEND sources src/dokanfuse.def)
+endif()
 set(install_headers
     include/fuse.h
     include/fuse_common.h
