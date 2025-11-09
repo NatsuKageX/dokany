@@ -55,7 +55,7 @@ set(install_headers
 set(compat_headers
     include/old/fuse.h
 )
-add_library(dokanfuse2 SHARED ${sources})
+add_library(dokanfuse2 ${sources})
 
 INSTALL(FILES ${install_headers} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fuse/)
 INSTALL(FILES ${compat_headers} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

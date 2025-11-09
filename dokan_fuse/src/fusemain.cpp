@@ -140,6 +140,8 @@ int impl_fuse_context::do_open_file(LPCWSTR FileName, DWORD share_mode,
   file->set_open_flags(convert_flags(Flags));
   fuse_file_info finfo = {0};
   finfo.flags = file->open_flags();
+  finfo.win_access_mode = file->win_access_mode();
+  finfo.win_share_mode = file->share_mode();
 
   CHECKED(ops_.open(fname.c_str(), &finfo));
 
@@ -1209,5 +1211,7 @@ fuse_file_info impl_file_handle::make_finfo() {
   fuse_file_info res = {0};
   res.fh = fh_;
   res.flags = open_flags_;
+  res.win_access_mode = win_access_mode_;
+  res.win_share_mode = shared_mode_;
   return res;
 }

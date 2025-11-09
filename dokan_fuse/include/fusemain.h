@@ -251,6 +251,9 @@ public:
 	const std::string &get_name() const { return file_lock->get_name(); }
 	void set_open_flags(int open_flags) { open_flags_ = open_flags; };
 	int open_flags() { return open_flags_; };
+    void set_win_access_mode(uint32_t access_mode) { win_access_mode_ = access_mode; }
+    uint32_t win_access_mode() const { return win_access_mode_; }
+    DWORD share_mode() const { return shared_mode_; }
 	void set_finfo(const fuse_file_info& finfo) { fh_ = finfo.fh; };
 	int check_lock(long long start, long long len) { return file_lock->lock_file(this, start, len, false); }
 	int lock(long long start, long long len) { return file_lock->lock_file(this, start, len); }
