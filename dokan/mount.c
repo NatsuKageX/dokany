@@ -206,7 +206,7 @@ VOID DokanDriverEventLogInstall() {
 
   if (RegCreateKeyEx(
           HKEY_LOCAL_MACHINE,
-          DOKAN_EVENT_LOG_SYSTEM_SERVICE_KEY L"\\dokan" DOKAN_MAJOR_API_VERSION,
+          DOKAN_EVENT_LOG_SYSTEM_SERVICE_KEY L"\\dokanPrivate" DOKAN_MAJOR_API_VERSION,
           0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &key,
           &position) != ERROR_SUCCESS) {
     return;
@@ -228,7 +228,7 @@ VOID DokanDriverEventLogUninstall() {
                     KEY_ALL_ACCESS, &key) != ERROR_SUCCESS) {
     return;
   }
-  RegDeleteKey(key, L"dokan" DOKAN_MAJOR_API_VERSION);
+  RegDeleteKey(key, L"dokanPrivate" DOKAN_MAJOR_API_VERSION);
   RegCloseKey(key);
 }
 
