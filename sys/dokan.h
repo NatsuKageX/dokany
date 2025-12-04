@@ -61,7 +61,7 @@ extern DokanPtr_FsRtlAreThereWaitingFileLocks
 #define DOKAN_SYMBOLIC_LINK_NAME L"\\DosDevices\\Global\\Volume"
 
 #ifndef DOKAN_DEVICE_PREFIX_NAME
-#define DOKAN_DEVICE_PREFIX_NAME L"Dokan"
+#define DOKAN_DEVICE_PREFIX_NAME L"DokanPrivate"
 #endif
 #ifndef DOKAN_GLOBAL_DEVICE_NAME
 #define DOKAN_GLOBAL_DEVICE_NAME \
@@ -99,12 +99,12 @@ extern DokanPtr_FsRtlAreThereWaitingFileLocks
 #define DOKAN_BASE_GUID                                                        \
   {                                                                            \
     0xd6cc17c5, 0x1734, 0x4085, {                                              \
-      0xbc, 0xe7, 0x96, 0x4f, 0x1e, 0x9f, 0x5d, 0xe9                           \
+      0xbc, 0xe7, 0x96, 0x4f, 0x1e, 0x9f, 0x5d, 0xe8                           \
     }                                                                          \
   }
 #endif
 
-#define TAG (ULONG)'AKOD'
+#define TAG (ULONG)'PAOD'
 
 #define DOKAN_MDL_ALLOCATED 0x1
 

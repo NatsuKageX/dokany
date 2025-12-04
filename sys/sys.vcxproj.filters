@@ -136,7 +136,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Inf Include="dokan.inf">
+    <Inf Include="dokanPrivate.inf">
       <Filter>Driver Files</Filter>
     </Inf>
   </ItemGroup>

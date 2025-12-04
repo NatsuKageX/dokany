@@ -35,7 +35,7 @@ THE SOFTWARE.
 #include <ShlObj.h>
 
 #define DOKAN_DRIVER_FULL_PATH                                                 \
-  L"\\??\\C:\\Program Files (x86)\\ctyun\\dokan\\dokan" DOKAN_MAJOR_API_VERSION L".sys"
+  L"\\??\\C:\\Program Files (x86)\\ctyun\\dokan\\dokanPrivate" DOKAN_MAJOR_API_VERSION L".sys"
 
 int ShowUsage() {
   fprintf(stderr,

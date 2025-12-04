@@ -17,12 +17,12 @@ CopyFiles  = DokanFileSystem.DriverFiles
 1 = %Disk1%
 
 [SourceDisksFiles]
-dokan2.sys = 1
+dokanPrivate2.sys = 1
 
 [DokanFileSystem.DriverFiles]
 %DriverName%.sys
 
 [Strings]
-ProviderName       = "Dokan"
-DriverName         = "dokan2"
-Disk1              = "Dokan Drive installation media"
+ProviderName       = "DokanPrivate"
+DriverName         = "dokanPrivate2"
+Disk1              = "DokanPrivate Drive installation media"
