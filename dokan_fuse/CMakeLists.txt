@@ -1,7 +1,8 @@
-cmake_minimum_required(VERSION 3.22.1)
+cmake_minimum_required(VERSION 3.15)
 project(dokanfuse2)
 include(GNUInstallDirs)
 set(CMAKE_CXX_STANDARD 11)
+remove_definitions(-DWIN32_LEAN_AND_MEAN)
 
 if(NOT CMAKE_BUILD_TYPE)
     message("No CMAKE_BUILD_TYPE specified, defaulting to Release")
