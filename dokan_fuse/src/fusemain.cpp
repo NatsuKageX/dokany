@@ -138,6 +138,7 @@ int impl_fuse_context::do_open_file(LPCWSTR FileName, DWORD share_mode,
   CHECKED(file_locks.get_file(fname, false, Flags, share_mode, file));
 
   file->set_open_flags(convert_flags(Flags));
+  file->set_win_access_mode(Flags);
   fuse_file_info finfo = {0};
   finfo.flags = file->open_flags();
   finfo.win_access_mode = file->win_access_mode();

@@ -233,6 +233,7 @@ class impl_file_handle
 	friend class impl_file_locks;
 	bool is_dir_;
 	int open_flags_;
+    uint32_t win_access_mode_;
 	uint64_t fh_;
 	impl_file_handle *next_file;
 	impl_file_lock *file_lock;
