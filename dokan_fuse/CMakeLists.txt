@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 project(dokanfuse2)
 include(GNUInstallDirs)
 set(CMAKE_CXX_STANDARD 11)
+option(BUILD_SHARED_LIBS "Build dokanfuse2 as shared lib" ON)
 remove_definitions(-DWIN32_LEAN_AND_MEAN)
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -63,6 +64,9 @@ set(compat_headers
     include/old/fuse.h
 )
 add_library(dokanfuse2 ${sources})
+if (NOT BUILD_SHARED_LIBS)
+    target_compile_definitions(dokanfuse2 PRIVATE -DDOKAN_FUSE_STATIC_BUILD)
+endif()
 
 INSTALL(FILES ${install_headers} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fuse/)
 INSTALL(FILES ${compat_headers} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

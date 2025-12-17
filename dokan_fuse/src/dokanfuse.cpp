@@ -22,6 +22,7 @@
   reinterpret_cast<impl_fuse_context *>(                                       \
       DokanFileInfo->DokanOptions->GlobalContext)
 
+#ifndef DOKAN_FUSE_STATIC_BUILD
 HINSTANCE hFuseDllInstance;
 
 extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason,
@@ -32,6 +33,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason,
   }
   return TRUE;
 }
+#endif
 
 static int WalkDirectoryWithSetFuseContext(PDOKAN_FILE_INFO DokanFileInfo, void *buf, const char *name,
     const struct FUSE_STAT *stbuf,
