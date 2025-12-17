@@ -569,7 +569,7 @@ bool fuse_chan::init() {
   DokanVersionType ResolvedDokanVersion;
   ResolvedDokanVersion =
       reinterpret_cast<DokanVersionType>(GetProcAddress(dokanDll, "DokanVersion"));
-  if (!ResolvedDokanVersion || ResolvedDokanVersion() < DOKAN_VERSION)
+  if (!ResolvedDokanVersion || ResolvedDokanVersion() < DOKAN_MINIMUM_COMPATIBLE_VERSION)
     return false;
 
   ResolvedDokanInit =
