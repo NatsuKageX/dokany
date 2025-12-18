@@ -444,7 +444,7 @@ static NTSTATUS DOKAN_CALLBACK FuseUnmounted(PDOKAN_FILE_INFO DokanFileInfo) {
     FPRINTF(stderr, "Unmount\n");
 
   impl_chain_guard guard(impl, DokanFileInfo->ProcessId);
-  return errno_to_ntstatus_error(impl->unmounted(DokanFileInfo));
+  return errno_to_ntstatus_error(impl->unmounted());
 }
 
 int fuse_interrupted(void) {
@@ -496,7 +496,11 @@ int do_fuse_loop(struct fuse *fs, bool mt) {
   impl_fuse_context impl(fs, &fs->ops, fs->user_data, fs->conf.debug != 0,
                          fileumask, dirumask, fs->conf.fsname, fs->conf.volname,
                          fs->conf.uncname, fs->conf.max_read);
-
+  if (fs->mark_exited) {
+    impl_chain_guard guard(&impl, -1);
+    impl.unmounted();
+    return 0;
+  }
   // Parse Dokan options
   PDOKAN_OPTIONS dokanOptions = static_cast<PDOKAN_OPTIONS>(malloc(sizeof(DOKAN_OPTIONS)));
   if (dokanOptions == nullptr) {
@@ -746,8 +750,11 @@ struct fuse *fuse_new(struct fuse_chan *ch, struct fuse_args *args,
 }
 
 void fuse_exit(struct fuse *f) {
+  if (f == nullptr)
+    return;
+  f->mark_exited = true;
   // A hack - unmount the attached filesystem, it will cause the loop to end
-  if (f == nullptr || !f->ch.get() || f->ch->mountpoint.empty())
+  if (!f->ch.get() || f->ch->mountpoint.empty())
     return;
   // Unmount attached FUSE filesystem
   fuse_unmount(f->ch->mountpoint.c_str(), f->ch.get());

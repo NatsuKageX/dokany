@@ -998,7 +998,7 @@ int impl_fuse_context::mounted(PDOKAN_FILE_INFO DokanFileInfo) {
 	return 0;
 }
 
-int impl_fuse_context::unmounted(PDOKAN_FILE_INFO DokanFileInfo) {
+int impl_fuse_context::unmounted() {
   if (ops_.destroy)
     ops_.destroy(user_data_); // Ignoring result
   return 0;

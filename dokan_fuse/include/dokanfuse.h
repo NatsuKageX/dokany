@@ -75,6 +75,7 @@ private:
 struct fuse
 {
 	bool within_loop;
+	bool mark_exited;
 	std::unique_ptr<fuse_chan> ch;
 	fuse_session sess;
 	fuse_config conf;
@@ -82,7 +83,7 @@ struct fuse
 	struct fuse_operations ops;
 	void *user_data;
 
-	fuse() : within_loop(), user_data()
+	fuse() : within_loop(), mark_exited(false), user_data()
 	{
 		memset(&conf,0,sizeof(fuse_config));
 		memset(&sess, 0, sizeof(fuse_session));

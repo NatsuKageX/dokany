@@ -201,7 +201,7 @@ public:
 
 	int mounted(PDOKAN_FILE_INFO DokanFileInfo);
 
-	int unmounted(PDOKAN_FILE_INFO DokanFileInfo);
+	int unmounted();
 };
 
 
