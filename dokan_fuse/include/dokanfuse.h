@@ -2,6 +2,7 @@
 #define DOKANFUSE_H_
 
 #include <string>
+#include <memory>
 
 #define FUSE_THREAD_COUNT 10
 #define DOKAN_DLL L"dokan" DOKAN_MAJOR_API_VERSION L".dll"
@@ -46,30 +47,47 @@ struct fuse_session
 	fuse_chan *ch;
 };
 
-struct fuse_chan
+struct dokan_lib_wrap
 {
-	fuse_chan() = default;
-	~fuse_chan();
-	fuse_chan(fuse_chan &other) = delete;
-	fuse_chan &operator=(const fuse_chan &other) = delete;
+    dokan_lib_wrap();
+    ~dokan_lib_wrap();
+    dokan_lib_wrap(const dokan_lib_wrap& other) = delete;
+	dokan_lib_wrap &operator=(const dokan_lib_wrap &other) = delete;
 
-	//This method dynamically loads DOKAN functions
-	bool init();
+    bool loaded() const { return dokanDll; }
 
+    typedef ULONG(__stdcall * DokanVersionType)();
 	typedef VOID (__stdcall *DokanInitType)();
 	typedef VOID(__stdcall *DokanShutdownType)();
-	typedef int (__stdcall *DokanMainType)(PDOKAN_OPTIONS,PDOKAN_OPERATIONS);
+	typedef int (__stdcall *DokanMainType)(PVOID,PVOID);
 	typedef BOOL (__stdcall *DokanUnmountType)(WCHAR DriveLetter);
 	typedef BOOL (__stdcall *DokanRemoveMountPointType)(LPCWSTR MountPoint);
+    DokanVersionType ResolvedDokanVersion;
+    DokanVersionType ResolvedDokanDriverVersion;
 	DokanInitType ResolvedDokanInit = nullptr;
 	DokanShutdownType ResolvedDokanShutdown = nullptr;
 	DokanMainType ResolvedDokanMain = nullptr;
 	DokanUnmountType ResolvedDokanUnmount = nullptr;
 	DokanRemoveMountPointType ResolvedDokanRemoveMountPoint = nullptr;
 
-	std::string mountpoint;
+    HMODULE dokanDll = nullptr;
 private:
-	HMODULE dokanDll = nullptr;
+    //This method dynamically loads DOKAN functions
+	bool init();
+};
+
+struct fuse_chan
+{
+	fuse_chan() = default;
+	~fuse_chan() = default;
+	fuse_chan(fuse_chan &other) = delete;
+	fuse_chan &operator=(const fuse_chan &other) = delete;
+
+	//This method dynamically loads DOKAN functions
+	bool init();
+
+	std::string mountpoint;
+    std::shared_ptr<dokan_lib_wrap> dokan_lib;
 };
 
 struct fuse

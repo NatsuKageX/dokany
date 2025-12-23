@@ -7,6 +7,7 @@
 #include "dokanfuse.h"
 #include "../../dokan/dokani.h"
 #include <stdio.h>
+#include <mutex>
 
 #if defined(__GNUC__)
 #define FPRINTF(f, args...)                                                   \
@@ -558,24 +559,31 @@ int do_fuse_loop(struct fuse *fs, bool mt) {
 
   // The main loop!
   fs->within_loop = true;
-  int res = fs->ch->ResolvedDokanMain(dokanOptions, &dokanOperations);
+  int res = fs->ch->dokan_lib->ResolvedDokanMain(dokanOptions, &dokanOperations);
   fs->within_loop = false;
   return res;
 }
 
-bool fuse_chan::init() {
+dokan_lib_wrap::dokan_lib_wrap() {
+    if (!init()) {
+        ResolvedDokanShutdown = nullptr;
+        this->~dokan_lib_wrap();
+    }
+}
+
+bool dokan_lib_wrap::init() {
   dokanDll = LoadLibraryW(DOKAN_DLL);
   if (!dokanDll)
     return false;
 
   // check version
-  typedef ULONG(__stdcall * DokanVersionType)();
-  DokanVersionType ResolvedDokanVersion;
   ResolvedDokanVersion =
       reinterpret_cast<DokanVersionType>(GetProcAddress(dokanDll, "DokanVersion"));
   if (!ResolvedDokanVersion || ResolvedDokanVersion() < DOKAN_MINIMUM_COMPATIBLE_VERSION)
     return false;
-
+  
+  ResolvedDokanDriverVersion = 
+    reinterpret_cast<DokanVersionType>(GetProcAddress(dokanDll, "DokanDriverVersion"));
   ResolvedDokanInit =
       reinterpret_cast<DokanInitType>(GetProcAddress(dokanDll, "DokanInit"));
   ResolvedDokanShutdown = reinterpret_cast<DokanShutdownType>(
@@ -586,18 +594,44 @@ bool fuse_chan::init() {
   ResolvedDokanRemoveMountPoint = reinterpret_cast<DokanRemoveMountPointType>(GetProcAddress(
     dokanDll, "DokanRemoveMountPoint"));
 
-  if (!ResolvedDokanMain || !ResolvedDokanUnmount ||
+  if (!ResolvedDokanDriverVersion || !ResolvedDokanInit || !ResolvedDokanMain || !ResolvedDokanUnmount ||
       !ResolvedDokanRemoveMountPoint)
     return false;
   ResolvedDokanInit();
   return true;
 }
 
-fuse_chan::~fuse_chan() {
-  if (dokanDll) {
+dokan_lib_wrap::~dokan_lib_wrap() {
+  if (ResolvedDokanShutdown) {
     ResolvedDokanShutdown();
-    FreeLibrary(dokanDll);
   }
+  if (dokanDll) {
+    FreeLibrary(dokanDll);
+    dokanDll = nullptr;
+  }
+}
+
+static std::shared_ptr<dokan_lib_wrap> init_global_dokan_lib()
+{
+  static std::weak_ptr<dokan_lib_wrap> g_dokan_lib_global_ref;
+  static std::mutex g_dokan_lib_init_lock;
+  std::lock_guard<std::mutex> lg(g_dokan_lib_init_lock);
+  auto dokan_lib_ref = g_dokan_lib_global_ref.lock();
+  if (dokan_lib_ref)
+    return dokan_lib_ref;
+  dokan_lib_ref = std::make_shared<dokan_lib_wrap>();
+  if (dokan_lib_ref->loaded()) {
+    g_dokan_lib_global_ref = dokan_lib_ref;
+  } else {
+    dokan_lib_ref.reset();
+  }
+  return dokan_lib_ref;
+}
+
+bool fuse_chan::init()
+{
+  dokan_lib = init_global_dokan_lib();
+  return bool(dokan_lib);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -705,8 +739,11 @@ void fuse_unmount(const char *mountpoint, struct fuse_chan *ch) {
     ch->mountpoint = mountpoint;
   }
 
+  if (!ch->dokan_lib)
+    return;
+
   // Unmount attached FUSE filesystem
-  if (ch->ResolvedDokanRemoveMountPoint) {
+  if (ch->dokan_lib->ResolvedDokanRemoveMountPoint) {
     wchar_t wmountpoint[MAX_PATH + 1];
     if (utf8_to_wchar_buf(mountpoint, wmountpoint, MAX_PATH) == -1) {
       return;
@@ -714,11 +751,11 @@ void fuse_unmount(const char *mountpoint, struct fuse_chan *ch) {
     wchar_t &last = wmountpoint[wcslen(wmountpoint) - 1];
     if (last == L'\\' || last == L'/')
       last = L'\0';
-    ch->ResolvedDokanRemoveMountPoint(wmountpoint);
+    ch->dokan_lib->ResolvedDokanRemoveMountPoint(wmountpoint);
     return;
   }
-  if (ch->ResolvedDokanUnmount)
-    ch->ResolvedDokanUnmount(mountpoint[0]); // Ugly :(
+  if (ch->dokan_lib->ResolvedDokanUnmount)
+    ch->dokan_lib->ResolvedDokanUnmount(mountpoint[0]); // Ugly :(
 }
 
 // Used from fuse_helpers.c
