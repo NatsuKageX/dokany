@@ -1,6 +1,7 @@
 #ifndef DOKANFUSE_H_
 #define DOKANFUSE_H_
 
+#include <minwindef.h>
 #include <string>
 #include <memory>
 
@@ -49,6 +50,21 @@ struct fuse_session
 
 struct dokan_lib_wrap
 {
+    typedef struct _DOKAN_MOUNT_POINT_INFO {
+        /** File System Type */
+        ULONG Type;
+        /** Mount point. Can be "M:\" (drive letter) or "C:\mount\dokan" (path in NTFS) */
+        WCHAR MountPoint[MAX_PATH];
+        /** UNC name used for network volume */
+        WCHAR UNCName[64];
+        /** Disk Device Name */
+        WCHAR DeviceName[64];
+        /** Session ID of calling process */
+        ULONG SessionId;
+        /** Contains information about the flags on the mount */
+        ULONG MountOptions;
+    } DOKAN_MOUNT_POINT_INFO, *PDOKAN_MOUNT_POINT_INFO;
+
     dokan_lib_wrap();
     ~dokan_lib_wrap();
     dokan_lib_wrap(const dokan_lib_wrap& other) = delete;
@@ -62,6 +78,8 @@ struct dokan_lib_wrap
 	typedef int (__stdcall *DokanMainType)(PVOID,PVOID);
 	typedef BOOL (__stdcall *DokanUnmountType)(WCHAR DriveLetter);
 	typedef BOOL (__stdcall *DokanRemoveMountPointType)(LPCWSTR MountPoint);
+    typedef PDOKAN_MOUNT_POINT_INFO (__stdcall* DokanGetMountPointListType)(BOOL uncOnly, PULONG nbRead);
+    typedef VOID (__stdcall *DokanReleaseMountPointListType)(PDOKAN_MOUNT_POINT_INFO list);
     DokanVersionType ResolvedDokanVersion;
     DokanVersionType ResolvedDokanDriverVersion;
 	DokanInitType ResolvedDokanInit = nullptr;
@@ -69,6 +87,8 @@ struct dokan_lib_wrap
 	DokanMainType ResolvedDokanMain = nullptr;
 	DokanUnmountType ResolvedDokanUnmount = nullptr;
 	DokanRemoveMountPointType ResolvedDokanRemoveMountPoint = nullptr;
+    DokanGetMountPointListType ResolvedDokanGetMountPointList = nullptr;
+    DokanReleaseMountPointListType ResolvedDokanReleaseMountPointList = nullptr;
 
     HMODULE dokanDll = nullptr;
 private:

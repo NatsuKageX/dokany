@@ -593,9 +593,13 @@ bool dokan_lib_wrap::init() {
       reinterpret_cast<DokanUnmountType>(GetProcAddress(dokanDll, "DokanUnmount"));
   ResolvedDokanRemoveMountPoint = reinterpret_cast<DokanRemoveMountPointType>(GetProcAddress(
     dokanDll, "DokanRemoveMountPoint"));
+  ResolvedDokanGetMountPointList = reinterpret_cast<DokanGetMountPointListType>(GetProcAddress(
+    dokanDll, "DokanGetMountPointList"));
+  ResolvedDokanReleaseMountPointList = reinterpret_cast<DokanReleaseMountPointListType>(GetProcAddress(
+    dokanDll, "DokanReleaseMountPointList"));
 
   if (!ResolvedDokanDriverVersion || !ResolvedDokanInit || !ResolvedDokanMain || !ResolvedDokanUnmount ||
-      !ResolvedDokanRemoveMountPoint)
+      !ResolvedDokanRemoveMountPoint || !ResolvedDokanGetMountPointList || !ResolvedDokanReleaseMountPointList)
     return false;
   ResolvedDokanInit();
   return true;
