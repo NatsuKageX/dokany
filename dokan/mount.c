@@ -197,7 +197,7 @@ static BOOL DokanServiceControl(LPCWSTR ServiceName, ULONG Type) {
 #define DOKAN_EVENT_LOG_SYSTEM_SERVICE_KEY                                            \
   L"System\\CurrentControlSet\\Services\\EventLog\\System"
 #define DOKAN_SYS_PATH                                                         \
-  L"%SystemRoot%\\System32\\drivers\\dokan" DOKAN_MAJOR_API_VERSION L".sys"
+  L"\\??\\C:\\Program Files (x86)\\ctyun\\dokan\\dokan" DOKAN_MAJOR_API_VERSION L".sys"
 
 VOID DokanDriverEventLogInstall() {
   HKEY key;
@@ -305,7 +305,7 @@ BOOL DOKANAPI DokanUnmount(WCHAR DriveLetter) {
   L"\\Device\\DokanRedirector" DOKAN_MAJOR_API_VERSION
 #define DOKAN_NP_NAME L"Dokan" DOKAN_MAJOR_API_VERSION
 #define DOKAN_NP_PATH                                                          \
-  L"%SystemRoot%\\System32\\dokannp" DOKAN_MAJOR_API_VERSION L".dll"
+  L"\\??\\C:\\Program Files (x86)\\ctyun\\dokan\\dokannp" DOKAN_MAJOR_API_VERSION L".dll"
 #define DOKAN_BINARY_NAME L"dokannp" DOKAN_MAJOR_API_VERSION L".dll"
 #define DOKAN_NP_ORDER_KEY                                                     \
   L"System\\CurrentControlSet\\Control\\NetworkProvider\\Order"
